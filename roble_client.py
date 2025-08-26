@@ -17,8 +17,10 @@ class AuthenticationClient:
         self.access_token: Optional[str] = None
         self.refresh_token: Optional[str] = None
 
-    def login(self, email: str, password: str) -> bool:
+    def login(self) -> bool:
         url = f"{self.auth_url}/login"
+        email = input("Email del nuevo usuario: ")
+        password = input("Password del nuevo usuario: ")
         resp = self.session.post(url, json={'email': email, 'password': password})
         try:
             resp.raise_for_status()
@@ -45,6 +47,21 @@ class AuthenticationClient:
         self.refresh_token = None
         print("Logout exitoso.")
         return True
+
+    def signup(self) -> bool:
+        url = f"{self.auth_url}/signup-direct"
+        print("URL de signup:", url)
+        new_email = input("Email del nuevo usuario: ")
+        new_password = input("Password del nuevo usuario: ")
+        nombre = input("Nombre del nuevo usuario: ")
+        header = {'Content-Type': 'application/json'}
+        resp = requests.post(url, json={'email': new_email, 'password': new_password, 'name': nombre}, headers=header)
+        if resp.status_code in (200, 201):
+            print("Usuario creado exitosamente.")
+            return True
+        else:
+            print(f"Error al crear usuario {resp.status_code}: {resp.text}")
+            return False
 
     def refresh(self) -> bool:
         if not self.refresh_token:
@@ -153,11 +170,9 @@ def main():
     auth_url = os.getenv('ROBLE_AUTH_URL')
     base_host = os.getenv('ROBLE_BASE_HOST')
     contract = os.getenv('ROBLE_CONTRACT')
-    email = os.getenv('ROBLE_EMAIL')
-    password = os.getenv('ROBLE_PASSWORD')
 
-    if not all([auth_url, base_host, contract, email, password]):
-        print("Define ROBLE_AUTH_URL, ROBLE_BASE_HOST, ROBLE_CONTRACT, ROBLE_EMAIL y ROBLE_PASSWORD en el .env")
+    if not all([auth_url, base_host, contract]):
+        print("Define ROBLE_AUTH_URL, ROBLE_BASE_HOST y ROBLE_CONTRACT en el .env")
         return
 
     auth_client = AuthenticationClient(auth_url)
@@ -167,51 +182,58 @@ def main():
         print("\n=== Menú Roble Client ===")
         print("1. Login")
         print("2. Logout")
-        print("3. Listar productos")
-        print("4. Agregar producto manual")
-        print("5. Actualizar producto")
-        print("6. Eliminar producto")
-        print("7. Eliminar todos los productos")
-        print("8. Agregar 30 productos aleatorios")
-        print("9. Mostrar tokens actuales")
-        print("10. Renovar token")
-        print("11. Salir")
+        print("3. Crear usuario")
+        print("4. Mostrar tokens actuales")
+        print("5. Renovar token")
+
+        print("6. Listar productos")
+        print("7. Agregar producto manual")
+        print("8. Actualizar producto")
+        print("9. Eliminar producto")
+        print("10. Eliminar todos los productos")
+        print("11. Agregar 30 productos aleatorios")
+
+        print("12. Salir")
         choice = input("Selecciona una opción: ")
 
         try:
             if choice == '1':
-                auth_client.login(email, password)
+                auth_client.login()
             elif choice == '2':
                 auth_client.logout()
             elif choice == '3':
-                products = product_client.get_products()
-                for p in products:
-                    print(p)
+                auth_client.signup()  
             elif choice == '4':
-                name = input("Nombre: ")
-                desc = input("Descripción: ")
-                qty = int(input("Cantidad: "))
-                product_client.add_product({'name': name, 'description': desc, 'quantity': qty})
-            elif choice == '5':
-                pid = input("ID del producto a actualizar: ")
-                key = input("Campo a actualizar (name/description/quantity): ")
-                val = input("Nuevo valor: ")
-                updates = {key: int(val) if key == 'quantity' else val}
-                product_client.update_product(pid, updates)
-            elif choice == '6':
-                pid = input("ID del producto a eliminar: ")
-                product_client.delete_product(pid)
-            elif choice == '7':
-                confirm = input("¿Seguro? Esto eliminará TODOS los productos (s/n): ")
-                if confirm.lower() == 's':
-                    product_client.delete_all_products()
-            elif choice == '8':
-                product_client.add_random_products(30)
-            elif choice == '9':
                 auth_client.show_tokens()
-            elif choice == '10':
+            elif choice == '5':
                 auth_client.refresh()
-            elif choice == '11':
+
+            # elif choice == '3':
+            #     products = product_client.get_products()
+            #     for p in products:
+            #         print(p)
+            # elif choice == '4':
+            #     name = input("Nombre: ")
+            #     desc = input("Descripción: ")
+            #     qty = int(input("Cantidad: "))
+            #     product_client.add_product({'name': name, 'description': desc, 'quantity': qty})
+            # elif choice == '5':
+            #     pid = input("ID del producto a actualizar: ")
+            #     key = input("Campo a actualizar (name/description/quantity): ")
+            #     val = input("Nuevo valor: ")
+            #     updates = {key: int(val) if key == 'quantity' else val}
+            #     product_client.update_product(pid, updates)
+            # elif choice == '6':
+            #     pid = input("ID del producto a eliminar: ")
+            #     product_client.delete_product(pid)
+            # elif choice == '7':
+            #     confirm = input("¿Seguro? Esto eliminará TODOS los productos (s/n): ")
+            #     if confirm.lower() == 's':
+            #         product_client.delete_all_products()
+            # elif choice == '8':
+            #     product_client.add_random_products(30)
+
+            elif choice == '12':
                 print("Saliendo...")
                 break
             else:
