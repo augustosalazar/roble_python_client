@@ -11,9 +11,8 @@ class ProductClient:
     Cliente para operar CRUD sobre productos en Roble,
     con manejo automático de refresh en 401.
     """
-    def __init__(self, base_host: str, contract: str, auth_client: AuthenticationClient):
-        self.base_host = base_host.rstrip('/')
-        self.contract = contract
+    def __init__(self, base_url: str, contract: str, auth_client: AuthenticationClient):
+        self.database_url = f"{base_url}/database/{contract}".rstrip('/')
         self.auth_client = auth_client
         self.session = auth_client.session
         self.table = 'Product'
@@ -32,27 +31,27 @@ class ProductClient:
         return resp
 
     def get_products(self) -> List[Dict]:
-        url = f"https://{self.base_host}/database/{self.contract}/read"
+        url = f"{self.database_url}/read"
         resp = self._request('GET', url, params={'tableName': self.table})
         products = resp.json()
         print(f"Encontrados {len(products)} productos.")
         return products
 
     def add_product(self, product: Dict) -> bool:
-        url = f"https://{self.base_host}/database/{self.contract}/insert"
+        url = f"{self.database_url}/insert"
         resp = self._request('POST', url, json={'tableName': self.table, 'records': [product]})
         print(f"Producto '{product.get('name')}' agregado.")
         return True
 
     def update_product(self, product_id: str, updates: Dict) -> bool:
-        url = f"https://{self.base_host}/database/{self.contract}/update"
+        url = f"{self.database_url}/update"
         body = {'tableName': self.table, 'idColumn': '_id', 'idValue': product_id, 'updates': updates}
         resp = self._request('PUT', url, json=body)
         print(f"Producto con ID {product_id} actualizado.")
         return True
 
     def delete_product(self, product_id: str) -> bool:
-        url = f"https://{self.base_host}/database/{self.contract}/delete"
+        url = f"{self.database_url}/delete"
         body = {'tableName': self.table, 'idColumn': '_id', 'idValue': product_id}
         resp = self._request('DELETE', url, json=body)
         print(f"Producto con ID {product_id} eliminado.")

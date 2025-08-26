@@ -4,8 +4,8 @@ class AuthenticationClient:
     """
     Cliente para autenticar usando el servicio de Roble.
     """
-    def __init__(self, auth_url: str):
-        self.auth_url = auth_url.rstrip('/')
+    def __init__(self, base_url: str, contract: str):
+        self.auth_url = f"{base_url}/auth/{contract}".rstrip('/')
         self.session = requests.Session()
         self.access_token: Optional[str] = None
         self.refresh_token: Optional[str] = None

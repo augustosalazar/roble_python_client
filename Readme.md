@@ -1,5 +1,7 @@
 # Roble Python Client
 
+Start by copying the `.env_sample` file to `.env` and filling in the required values.
+
 ## Linux / Mac
 
 ```bash

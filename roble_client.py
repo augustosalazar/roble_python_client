@@ -12,15 +12,14 @@ load_dotenv()  # Carga variables de entorno desde .env
 
 def main():
     # Variables desde .env
-    auth_url = os.getenv('ROBLE_AUTH_URL')
     base_host = os.getenv('ROBLE_BASE_HOST')
     contract = os.getenv('ROBLE_CONTRACT')
 
-    if not all([auth_url, base_host, contract]):
-        print("Define ROBLE_AUTH_URL, ROBLE_BASE_HOST y ROBLE_CONTRACT en el .env")
+    if not all([base_host, contract]):
+        print("Define ROBLE_BASE_HOST y ROBLE_CONTRACT en el .env")
         return
 
-    auth_client = AuthenticationClient(auth_url)
+    auth_client = AuthenticationClient(base_host, contract)
     product_client = ProductClient(base_host, contract, auth_client)
 
     while True:
